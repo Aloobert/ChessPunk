@@ -1,15 +1,17 @@
 using UnityEngine;
 using System.Collections;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
-public class SniperAbility : PrimaryAbility
+public class RocketAbility : SpecialAbility
 {
-    public GameObject projectilePrefab; // assign your projectile prefab here
-    public int projectileDamage = 2;
+    public GameObject projectilePrefab; // assign a rocket projectile prefab
+    public int baseDamage = 2;
+    public int splashDamage = 1;
     public float projectileTravelTime = 0.1f;
 
     void Awake()
     {
-        cooldownRounds = 2;
+        cooldownRounds = 6;
     }
 
     public override IEnumerator UseAbility(Vector3 direction)
@@ -41,7 +43,31 @@ public class SniperAbility : PrimaryAbility
             {
                 BossController boss = hit.GetComponent<BossController>();
                 if (boss != null)
-                    boss.TakeDamage(projectileDamage);
+                    boss.TakeDamage(baseDamage);
+
+                // Splash damage to all 8 surrounding tiles.
+                Vector3[] offsets = new Vector3[]
+                {
+                    new Vector3(1,0,0),
+                    new Vector3(1,1,0),
+                    new Vector3(0,1,0),
+                    new Vector3(-1,1,0),
+                    new Vector3(-1,0,0),
+                    new Vector3(-1,-1,0),
+                    new Vector3(0,-1,0),
+                    new Vector3(1,-1,0)
+                };
+                foreach (Vector3 offset in offsets)
+                {
+                    Vector3 splashPos = nextPos + offset;
+                    Collider2D splashHit = Physics2D.OverlapPoint(splashPos);
+                    if (splashHit != null && splashHit.CompareTag("Boss"))
+                    {
+                        BossController splashBoss = splashHit.GetComponent<BossController>();
+                        if (splashBoss != null)
+                            splashBoss.TakeDamage(splashDamage);
+                    }
+                }
                 break;
             }
             currentPos = nextPos;

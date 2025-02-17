@@ -3,6 +3,7 @@ using System.Collections;
 
 public class ThreeRoundBurstAbility : PrimaryAbility
 {
+    public GameObject projectilePrefab; // assign your projectile prefab
     public int projectileDamage = 1;
     public float projectileTravelTime = 0.1f;
 
@@ -17,24 +18,20 @@ public class ThreeRoundBurstAbility : PrimaryAbility
             yield break;
         SetCooldown();
 
-        Vector3 dirNormalized = direction.normalized;
-
-        // Fire 3 consecutive projectiles.
+        Vector3 dir = direction.normalized;
+        // Fire three consecutive projectiles
         for (int i = 0; i < 3; i++)
         {
-            StartCoroutine(FireProjectile(dirNormalized));
-            // Minimal delay between spawns; they are fired "consecutively"
-            yield return new WaitForSeconds(0.05f);
+            StartCoroutine(FireProjectile(dir));
+            yield return new WaitForSeconds(0.1f);
         }
-
         yield return new WaitForSeconds(0.5f);
     }
 
     IEnumerator FireProjectile(Vector3 direction)
     {
+        GameObject proj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
         Vector3 currentPos = transform.position;
-        // For this ability, projectiles spawn regardless of immediate obstacle.
-        // We simulate travel; if blocked, the projectile will immediately collide.
         while (true)
         {
             Vector3 nextPos = currentPos + direction;
@@ -43,24 +40,20 @@ public class ThreeRoundBurstAbility : PrimaryAbility
             {
                 Node node = gm.GetNodeFromPosition(nextPos);
                 if (!node.Walkable)
-                {
                     break;
-                }
             }
-
             Collider2D hit = Physics2D.OverlapPoint(nextPos);
             if (hit != null && hit.CompareTag("Boss"))
             {
                 BossController boss = hit.GetComponent<BossController>();
                 if (boss != null)
-                {
                     boss.TakeDamage(projectileDamage);
-                }
                 break;
             }
-            // Advance projectile position.
             currentPos = nextPos;
+            proj.transform.position = currentPos;
             yield return new WaitForSeconds(projectileTravelTime);
         }
+        Destroy(proj);
     }
 }
