@@ -7,7 +7,7 @@ public class MenuManager : MonoBehaviour
     public void StartNewGame()
     {
         // Replace "NewGameScene" with the actual scene name
-        SceneManager.LoadScene("NewGameScene");
+        SceneManager.LoadScene("HeroSelectScene");
     }
 
     public void ContinueGame()

@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     // Store occupantTile -> behindTile
     private Dictionary<Vector3, Vector3> cachedAttackBehindTile = new Dictionary<Vector3, Vector3>();
 
+    public Vector2 facingDirection = Vector2.up;
+
     void Start()
     {
         targetPosition = transform.position;
@@ -58,6 +60,11 @@ public class PlayerController : MonoBehaviour
                 ShowMovementOverlay();
             }
             HandleBasicMovementInput();
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                GetComponent<PlayerAbilities>()?.UsePrimaryAbility();
+            }
         }
     }
 
