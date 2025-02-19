@@ -1,0 +1,407 @@
+Game Design Document
+General Info
+Perspective: Top-Down
+Engine: Unity 2D
+Movement: Grid-based (tile-based movement)
+Gameplay: Turn-Based
+Elements: Roguelike, Deckbuilder
+Main Menu
+Continue Game
+
+(Greyed out until a saved game file exists.)
+Resumes the run from the last lobby reached.
+New Game
+
+Starts a new run in a fresh lobby.
+Practice Mode
+
+Unlock: Available after your first Completed Run (defeating the 10th boss).
+A red notification icon will mark the button once unlocked.
+In Practice Mode, no temporary ability upgrades or healing benefits are provided.
+The player takes damage normally; if HP reaches 0, the options are to exit Practice Mode or reset the board.
+Description: A sandbox mode where you can adjust settings, abilities, cooldowns, HP, grid size, pillar placement/quantity, and more.
+Settings
+
+Provides separate tabs for Audio, Graphics, and Controls.
+Quit
+
+Exits the game.
+Gameplay Overview
+1. Definitions
+Run: Any attempt at progressing through the game.
+Completed Run: A run in which the player defeats the 10th boss.
+2. New Game Setup
+Hero Selection & Movement Ability
+Hero Selection:
+The player chooses one hero at the start.
+Pawn is available by default; the other heroes (Rook, Bishop, Knight, Queen, King) unlock via specific run completion conditions.
+Each hero provides a unique Movement Ability that is inherent and fixed for that run.
+Ability Selection
+After choosing a hero, the player is taken to the Ability Selection screen to pick one ability for each of the following four slots: Primary, Secondary, Special, and Passive.
+The Movement Ability Slot is determined by the chosen hero and is not selectable.
+Initially, only one option per slot is unlocked; additional abilities become available as you progress.
+Note: With the removal of Boss Tokens, hovering over an ability now simply shows its details (such as damage, cooldown, etc.) rather than a cost.
+3. Lobby
+Layout: A 3×3 grid room with the player starting at the center tile.
+Boss Doors: Three doors are located at the center-left, center-right, and center-top tiles.
+Lobby UI: Displays your current abilities (which are not active in the lobby).
+Healing: There is no automatic healing on entering the lobby. Healing is now only possible by choosing the heal option during the post-boss upgrade phase.
+4. Boss Rooms & Boss Setup
+Boss Generation:
+Each boss is randomly selected from the same pool of hero classes as the player.
+The chosen class determines the boss’s Movement Ability.
+The boss is assigned one random ability per slot (Primary, Secondary, Special, and Passive).
+5. Boss Fight & Upgrade Mechanics
+Combat:
+
+Fights are turn-based (see “Turn Structure & Cooldowns” below).
+Post-Boss Upgrade Options:
+After defeating a boss, you are presented with the boss’s four abilities (one for each slot). You then choose one of the following options:
+
+Replace: Swap your current ability in a given slot with the boss’s ability from that slot.
+Upgrade: If the boss’s ability matches one you already have (by name), you may upgrade that ability to a higher level.
+Note: Upgrades are temporary; they remain only for the duration of the run.
+Skip Upgrade & Heal: Forego any ability change to actively heal—restore up to 2 missing HP (if you’re missing only 1 HP, only 1 is restored).
+There is no additional healing on entering the next lobby.
+
+6. Run Progression
+Run Flow:
+
+After each boss victory, you proceed to a new lobby with three new boss doors.
+The run continues until you defeat the 10th boss.
+After the 10th Boss:
+
+You may choose to enter Endless Mode (with increased difficulty) or return to the Main Menu.
+Temporary Upgrades: Any ability upgrades or replacements obtained during the run are lost once the run ends.
+Hero Unlocks:
+
+Pawn: Available by default.
+Rook: Unlock by completing 1 run with Pawn (i.e., defeat the 10th boss while using Pawn).
+Bishop: Unlock by completing 5 runs (each run must be completed, regardless of which hero is used).
+Knight: Unlock by completing 7 runs.
+Queen: Unlock by completing 1 run with each character (excluding King).
+King: Unlock by completing 2 runs with each character (excluding King).
+7. Endless Mode
+Activation: After defeating the 10th boss.
+Difficulty: Difficulty scaling is accelerated (detailed below).
+Note: Temporary ability upgrades and healing decisions carry over as normal during Endless Mode, but they reset when a run ends.
+Turn-Based Combat & Movement
+Turn Structure & Cooldowns
+Rounds:
+
+Each round comprises a Player Turn followed by a Boss Turn.
+The Player always takes the first action.
+Actions:
+
+Movement: Moving one tile (or using a movement ability) counts as one action.
+Ability Use: Using any ability counts as one action.
+Cooldowns:
+
+Each ability has a cooldown measured in rounds.
+For example, if you use an ability with a 3-round cooldown on Round 1, it will be available again at the start of Round 4.
+Both the player’s and boss’s turns count toward reducing cooldowns.
+Grid & Pillar Generation
+Arena Size:
+
+Each boss arena is generated on a grid ranging in size from 3×3 to 9×9 (the first arena is always 5×5).
+Pillar Placement:
+
+Pillars serve as obstacles.
+Path Guarantee: Pillars are placed such that there is always at least one unobstructed path between the player (starting at the center bottom tile) and the boss (starting at the center top tile).
+Pillars are never placed on the top or bottom rows to maintain clear starting positions.
+Tile-Based Movement
+Movement Rules:
+Movement occurs along a grid of tiles.
+Visual Indicators:
+Green Border: Valid move.
+Red Border: Invalid (blocked or out of range).
+Blue Border: Tiles valid for Movement Ability actions.
+Obstacles:
+For heroes with ranged movement (Rook, Bishop, Queen), pillars block movement beyond their location.
+The Knight can jump over pillars but may not land on a tile containing a pillar.
+Boss AI
+Each boss follows one of three behavioral profiles:
+
+Aggressive:
+
+Closes the distance quickly and uses high-damage melee or short-range attacks.
+Defensive:
+
+Maintains distance, uses pushback or pillars for cover, and may activate defensive abilities.
+Opportunistic:
+
+Prioritizes its strongest available attack; if that ability is on cooldown or the target is out of range, it falls back on weaker or movement-based actions.
+Note: The boss does not telegraph its next move. Instead, its actions are determined in real time based on its behavior profile and current battlefield conditions.
+
+Abilities
+Damage values are measured in HP, and cooldowns are in rounds. All ability upgrades during a run are temporary and revert once the run ends.
+
+Primary Abilities
+Shotgun
+
+Fires three projectiles in a cone (one straight, two diagonally).
+Each projectile deals 1 damage.
+Cooldown: 3 rounds.
+Projectiles stop upon colliding with an enemy, pillar, or map boundary.
+Sniper
+
+Fires a single, straight projectile.
+Deals 2 damage.
+Cooldown: 2 rounds.
+Projectile stops upon contact with an enemy, pillar, or boundary.
+Three Round Burst
+
+Fires three consecutive projectiles in a straight line from the same origin.
+Each projectile deals 1 damage.
+Cooldown: 4 rounds.
+Even if a pillar or wall is immediately in front, all projectiles are spawned (they will instantly collide if blocked).
+Musket
+
+Fires a single, straight projectile that deals 2 damage.
+Cooldown: 2 rounds.
+Chain Reaction:
+On hit, the target is pushed 1 tile backward.
+If there is a pillar immediately behind the target, the target bounces off and takes an additional 1 damage.
+If another enemy occupies that tile, that enemy takes 1 extra damage as well, and the original target suffers an extra 1 damage too.
+The chain reaction halts if a pillar is encountered (the secondary enemy is not pushed).
+Secondary Abilities
+Sword
+
+Executes a single-target stab for 2 damage.
+Cooldown: 2 rounds.
+Whip
+
+Attacks up to 3 tiles ahead in the facing direction for 1 damage.
+Cooldown: 3 rounds.
+Boomerang
+
+Thrown in a counterclockwise arc, it affects the 8 tiles immediately surrounding the player (forming a ring).
+Deals 1 damage to each enemy within those tiles.
+The boomerang follows a fixed path around the ring and continues unless stopped by a pillar or the map edge.
+It does not travel to tiles behind the boss relative to the player’s facing direction.
+Grappling Hook
+
+A context-based ability that always targets the furthest unobstructed tile in the chosen direction.
+When no enemy is encountered: Pulls the player to that furthest tile.
+If an enemy is in the hook’s path: Pulls the enemy to the tile immediately adjacent to the player.
+If a pillar is encountered: Pulls the player to the tile just before the pillar.
+Deals 2 damage upon use.
+Cooldown: 3 rounds.
+Special Abilities
+Bubble Shield
+
+Generates a shield that blocks one instance of damage.
+The cooldown starts once the shield is broken.
+Cooldown: 5 rounds.
+Spin
+
+Damages all 8 adjacent tiles for 3 damage each.
+Cooldown: 6 rounds.
+Plus Burst
+
+Damages the four orthogonally adjacent tiles (up, down, left, right) for 3 damage each.
+Cooldown: 6 rounds.
+Rocket
+
+Fires a projectile that deals 2 damage on impact.
+Additionally, it deals 1 splash damage to all 8 tiles surrounding the impact point.
+Cooldown: 6 rounds.
+Passive Abilities
+Health Aura
+
+Increases your maximum HP by 1.
+Damage Aura
+
+Increases the damage of all your abilities by 1.
+Defense Aura
+
+Grants a Bubble Shield at the start of each fight.
+Speed Aura
+
+Reduces the cooldown of all abilities by 1 round.
+Characters & Movement Abilities
+Each hero’s movement is defined by a chess-inspired class. All Movement Abilities share a fixed 5-round cooldown.
+
+Pawn:
+
+Moves 2 tiles horizontally or vertically.
+Deals 1 damage when landing on an enemy.
+Bishop:
+
+Moves diagonally across any number of unobstructed tiles.
+Deals 1 damage when landing on an enemy.
+Rook:
+
+Moves horizontally or vertically across any number of unobstructed tiles.
+Deals 1 damage upon contact.
+Knight:
+
+Moves in an “L” shape (2 tiles in one direction then 1 tile perpendicular).
+Ignores obstacles along its path but cannot land on a pillar.
+Deals 1 damage upon contact.
+Queen:
+
+Moves in any direction (horizontal, vertical, or diagonal) over unobstructed tiles.
+Deals 2 damage on contact.
+King:
+
+Moves 1 tile in any direction.
+Deals 5 damage on contact.
+Health & Meta Progression
+HP:
+
+Damage is measured in HP; each point of damage reduces your HP by 1.
+Temporary Ability Upgrades:
+
+Upgrades obtained during a run (via the post-boss upgrade options) are temporary.
+Once a run is completed, all abilities revert to their base levels.
+Difficulty Scaling
+Regular Runs (Boss Fights 1–10)
+Scaling Formula:
+For the nth boss, use the formula:
+Base HP: 10 + (n – 1) × Increment
+Base Damage: Scales proportionally based on the same Increment.
+Increment: A balancing constant determined during playtesting (for example, if Increment = 2, then Boss #3 has 10 + 2×2 = 14 HP).
+Endless Mode (Boss Fights 11+)
+Accelerated Scaling:
+Beginning with Boss #11, each new boss receives an additional bonus of +2 × Increment (instead of +1 × Increment) to both HP and damage.
+This doubled rate ensures a progressively steeper difficulty curve.
+Button Mapping & Input
+Mouse & Keyboard
+Select Ability:
+Navigate the ability list using WASD; confirm your selection by pressing F or by clicking with the mouse.
+Activate Movement Ability:
+Click to activate, view highlighted valid tiles (blue), then press F to confirm your chosen destination.
+Pass Turn:
+Either click the on-screen “Pass Turn” button or use the sequence: navigate with WASD, then press F.
+Movement:
+Use WASD to move.
+Rotation:
+Rotate clockwise using E and counterclockwise using Q.
+Pause:
+Press ESC.
+Controller/Gamepad
+Select Ability:
+Use the Left Stick to navigate the ability list; press A to confirm.
+Activate Movement Ability:
+Press A to activate, then use the controller to select from the highlighted valid tiles (blue) and press A again to confirm.
+Pass Turn:
+Press B or select the on-screen option and confirm with A.
+Movement:
+Use the D-Pad.
+Rotation:
+Rotate clockwise with the Right Bumper; counterclockwise with the Left Bumper.
+Pause:
+Press the Start/Menu button.
+Scenes & Transitions
+1. MainMenu
+Purpose:
+The MainMenu is the initial hub where players begin their session. It provides access to starting a new run, continuing an existing one, entering Practice Mode, adjusting settings, or quitting the game.
+
+Key Elements:
+
+Buttons:
+Continue Game:
+Displays the most recent run; disabled if no saved game exists.
+New Game:
+Initiates a fresh run.
+Practice Mode:
+Unlocked after the first Completed Run.
+Button displays a red notification icon once unlocked.
+Settings:
+Opens a sub-menu with Audio, Graphics, and Controls tabs.
+Quit:
+Exits the game.
+Visuals & Layout:
+A clear, navigable menu with visually distinct buttons.
+Background art or animated elements to establish the game’s thematic tone.
+Transitions:
+
+New Game → Loads HeroSelect scene.
+Continue Game → Loads the last saved state (likely landing in the Lobby or current run scene).
+Practice Mode → Loads a modified run setup (with sandbox settings) similar to the HeroSelect/AbilitySelect flow but with Practice Mode parameters.
+Settings/Quit → Transitions to the appropriate system interface or exits the game.
+2. HeroSelect
+Purpose:
+The HeroSelect scene lets the player choose a hero, each of which provides a unique Movement Ability that defines the gameplay style for the run.
+
+Key Elements:
+
+Hero List:
+Displays available heroes (with Pawn available by default and others locked until their conditions are met).
+Each hero entry includes an image, name, and a brief description of its Movement Ability.
+Selection Indicators:
+Visual feedback for selection (highlighting, detailed stats).
+User Interface:
+Clear instructions on how hero selection affects gameplay.
+“Confirm” or “Next” button to proceed once a hero is selected.
+Transitions:
+
+Confirming a Hero:
+Proceeds to the AbilitySelect scene.
+3. AbilitySelect
+Purpose:
+This scene allows the player to choose one ability for each of the four upgradeable slots (Primary, Secondary, Special, and Passive) that will be used for the duration of the run.
+
+Key Elements:
+
+Ability Slots Display:
+Four slots (Primary, Secondary, Special, Passive) presented with icons, names, and descriptions.
+A separate display (or indicator) shows the hero-determined Movement Ability (non-selectable).
+Ability Options:
+A list or grid of abilities available for selection.
+Abilities are shown with their base stats (damage, cooldown, etc.) and any additional details.
+Navigation & Selection:
+Clear instructions and controls (using WASD/gamepad navigation).
+Visual feedback (highlighting, tooltips) as the player browses abilities.
+Transitions:
+
+Confirming Ability Choices:
+Advances to the Lobby scene, where the run begins.
+4. Lobby
+Purpose:
+The Lobby serves as a non-combat intermission between boss encounters. It offers a spatial setting where the player can prepare for the next challenge and choose which boss arena to enter.
+
+Key Elements:
+
+Layout:
+A 3×3 grid room with the player starting at the center tile.
+Three distinct Boss Doors located at the center-left, center-right, and center-top tiles.
+HUD Elements:
+A display of the player’s current abilities and HP.
+Minimal UI elements to avoid clutter.
+Strategic Choice:
+No automatic healing occurs here; any healing must be chosen during the post-boss upgrade phase.
+Ambient design reinforces that while the Lobby is safe, resource management remains key.
+Transitions:
+
+Selecting a Boss Door:
+Transitions to the BossArena scene, with the chosen door determining the next boss encounter.
+Return Flow:
+After a boss fight and subsequent upgrade/heal phase, the player returns to the Lobby for the next stage.
+5. BossArena
+Purpose:
+The BossArena is the primary combat scene where turn-based encounters take place between the player and a randomly generated boss.
+
+Key Elements:
+
+Arena Grid:
+A grid whose size ranges from 3×3 to 9×9 (the first arena is fixed at 5×5).
+Pillar placement is generated to ensure at least one unobstructed path between the player’s starting position (center bottom) and the boss (center top).
+Combat HUD:
+Displays for both Player and Boss HP.
+Vertical hotbars for abilities (player’s abilities on one side, boss’s on the other).
+A round counter and cooldown indicators for abilities.
+Turn-Based Interface:
+Clear separation of Player Turn and Boss Turn.
+Visual indicators for valid movement (green), invalid moves (red), and potential Movement Ability targets (blue).
+Action Feedback:
+Animations and visual cues for attacks, movements, and ability usage to enhance clarity during combat.
+Transitions:
+
+End of Boss Fight:
+On defeating the boss, the game transitions to a post-fight upgrade screen where the player chooses to replace/upgrade an ability or heal.
+After resolving the upgrade phase, the game returns to the Lobby.
+Player Defeat:
+If HP reaches 0, the game transitions to a Game Over or Retry screen, as defined in your overall flow.
+END OF DOCUMENT
