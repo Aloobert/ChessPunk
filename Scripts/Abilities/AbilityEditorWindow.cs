@@ -1,94 +1,159 @@
-#if UNITY_EDITOR
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
+using System.Collections.Generic;
 
 public class AbilityEditorWindow : EditorWindow
 {
-    private string abilityName = "New Ability";
-    private AbilityClass abilityClass = AbilityClass.Primary;
-    private DamageType damageType = DamageType.Physical;
-    private int damage = 10;
-    private float cooldown = 1.0f;
-    private float range = 5f;
-    private bool isMelee = false;
-    private GameObject projectilePrefab;
-    private int projectileCount = 1;
-    private float spreadAngle = 0f;
-    private AnimationClip abilityAnimation;
-    private Sprite icon;
+    // Toolbar tabs: Active vs Passive ability editor.
+    private int tabIndex = 0;
+    private string[] tabNames = new string[] { "Active Ability", "Passive Ability" };
 
+    // Common field for ability name.
+    private string abilityName = "New Ability";
+
+    // --- Active Ability Fields ---
+    private int damage = 1;
+    private int cooldown = 3;
+    private int projectileCount = 0;
+    private float projectileDelay = 0f;
+    private float knockbackDistance = 0f;
+    private int knockbackDamage = 0;
+
+    // Enum for projectile directions.
+    public enum ProjectileDirection
+    {
+        Forward,
+        Backwards,
+        Left,
+        Right,
+        DiagonalLeftForward,
+        DiagonalRightForward,
+        DiagonalLeftBackwards,
+        DiagonalRightBackwards
+    }
+    // A dynamic list to hold each projectile’s direction (stored as an int index into ProjectileDirection).
+    private List<int> projectileDirections = new List<int>();
+
+    // --- Passive Ability Fields ---
+    public enum PassiveType { HealthAura, DamageAura, DefenseAura, SpeedAura }
+    private int passiveTypeIndex = 0;
+    private float passiveMagnitude = 1f;
+
+    // Opens the window from the Tools menu.
     [MenuItem("Tools/Ability Editor")]
     public static void ShowWindow()
     {
         GetWindow<AbilityEditorWindow>("Ability Editor");
     }
 
-    void OnGUI()
+    private void OnGUI()
     {
-        GUILayout.Label("Create a New Ability", EditorStyles.boldLabel);
+        GUILayout.Label("Ability Editor", EditorStyles.boldLabel);
+        tabIndex = GUILayout.Toolbar(tabIndex, tabNames);
 
+        // Common ability name field.
         abilityName = EditorGUILayout.TextField("Ability Name", abilityName);
-        abilityClass = (AbilityClass)EditorGUILayout.EnumPopup("Ability Class", abilityClass);
-        damageType = (DamageType)EditorGUILayout.EnumPopup("Damage Type", damageType);
-        icon = (Sprite)EditorGUILayout.ObjectField("Icon", icon, typeof(Sprite), false);
 
-        GUILayout.Space(10);
-        GUILayout.Label("Combat Settings", EditorStyles.boldLabel);
-        damage = EditorGUILayout.IntField("Damage", damage);
-        cooldown = EditorGUILayout.FloatField("Cooldown", cooldown);
-        range = EditorGUILayout.FloatField("Range", range);
-
-        GUILayout.Space(10);
-        GUILayout.Label("Projectile / Melee Settings", EditorStyles.boldLabel);
-        isMelee = EditorGUILayout.Toggle("Is Melee", isMelee);
-        if (!isMelee)
+        // Draw either the Active or Passive fields based on the selected tab.
+        if (tabIndex == 0)
         {
-            projectilePrefab = (GameObject)EditorGUILayout.ObjectField("Projectile Prefab", projectilePrefab, typeof(GameObject), false);
-            projectileCount = EditorGUILayout.IntField("Projectile Count", projectileCount);
-            spreadAngle = EditorGUILayout.FloatField("Spread Angle", spreadAngle);
+            DrawActiveAbilityFields();
         }
-        abilityAnimation = (AnimationClip)EditorGUILayout.ObjectField("Ability Animation", abilityAnimation, typeof(AnimationClip), false);
+        else if (tabIndex == 1)
+        {
+            DrawPassiveAbilityFields();
+        }
 
         GUILayout.Space(10);
-        if (GUILayout.Button("Create Ability Asset"))
+        if (GUILayout.Button("Save Ability"))
         {
-            CreateAbilityAsset();
+            SaveAbility();
         }
     }
 
-    void CreateAbilityAsset()
+    /// <summary>
+    /// Draws the fields used for configuring an active ability.
+    /// </summary>
+    private void DrawActiveAbilityFields()
     {
-        // Decide which base type to create based on Ability Class.
-        // For simplicity, we assume active abilities use the ShotgunAbility type (you can later expand to a selection of types).
-        AbilityBase newAbility = ScriptableObject.CreateInstance<ShotgunAbility>();
+        GUILayout.Label("Active Ability Settings", EditorStyles.boldLabel);
+        damage = EditorGUILayout.IntField("Damage", damage);
+        cooldown = EditorGUILayout.IntField("Cooldown (Rounds)", cooldown);
+        projectileCount = EditorGUILayout.IntField("Projectile Count", projectileCount);
+        projectileDelay = EditorGUILayout.FloatField("Projectile Delay", projectileDelay);
+        knockbackDistance = EditorGUILayout.FloatField("Knockback Distance", knockbackDistance);
+        knockbackDamage = EditorGUILayout.IntField("Knockback Damage", knockbackDamage);
 
-        newAbility.abilityName = abilityName;
-        newAbility.abilityClass = abilityClass;
-        newAbility.damageType = damageType;
-        newAbility.icon = icon;
-        newAbility.damage = damage;
-        newAbility.cooldown = cooldown;
-        newAbility.range = range;
-        newAbility.isMelee = isMelee;
-        newAbility.projectilePrefab = projectilePrefab;
-        newAbility.projectileCount = projectileCount;
-        newAbility.spreadAngle = spreadAngle;
-        newAbility.abilityAnimation = abilityAnimation;
+        // Ensure the projectileDirections list matches the projectile count.
+        while (projectileDirections.Count < projectileCount)
+            projectileDirections.Add(0);
+        while (projectileDirections.Count > projectileCount)
+            projectileDirections.RemoveAt(projectileDirections.Count - 1);
 
-        // Save the asset to a folder "Assets/Abilities"
+        // For each projectile, display a dropdown to select its direction.
+        if (projectileCount > 0)
+        {
+            GUILayout.Label("Projectile Directions", EditorStyles.boldLabel);
+            for (int i = 0; i < projectileCount; i++)
+            {
+                projectileDirections[i] = EditorGUILayout.Popup(
+                    "Projectile " + (i + 1) + " Direction",
+                    projectileDirections[i],
+                    System.Enum.GetNames(typeof(ProjectileDirection))
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Draws the fields used for configuring a passive ability.
+    /// </summary>
+    private void DrawPassiveAbilityFields()
+    {
+        GUILayout.Label("Passive Ability Settings", EditorStyles.boldLabel);
+        passiveTypeIndex = EditorGUILayout.Popup("Passive Type", passiveTypeIndex, System.Enum.GetNames(typeof(PassiveType)));
+        passiveMagnitude = EditorGUILayout.FloatField("Effect Magnitude", passiveMagnitude);
+    }
+
+    /// <summary>
+    /// Saves the ability data as a new ScriptableObject asset.
+    /// </summary>
+    private void SaveAbility()
+    {
+        // Create an instance of the AbilityData ScriptableObject.
+        AbilityData ability = ScriptableObject.CreateInstance<AbilityData>();
+        ability.abilityName = abilityName;
+
+        if (tabIndex == 0) // Active ability settings.
+        {
+            ability.isPassive = false;
+            ability.damage = damage;
+            ability.cooldown = cooldown;
+            ability.projectileCount = projectileCount;
+            ability.projectileDelay = projectileDelay;
+            ability.knockbackDistance = knockbackDistance;
+            ability.knockbackDamage = knockbackDamage;
+            ability.projectileDirections = projectileDirections.ToArray();
+        }
+        else if (tabIndex == 1) // Passive ability settings.
+        {
+            ability.isPassive = true;
+            ability.passiveType = (AbilityData.PassiveType)passiveTypeIndex;
+            ability.passiveMagnitude = passiveMagnitude;
+        }
+
+        // Create (or ensure the existence of) the Abilities folder and save the asset.
         string assetPath = "Assets/Abilities";
         if (!AssetDatabase.IsValidFolder(assetPath))
         {
             AssetDatabase.CreateFolder("Assets", "Abilities");
         }
-        string assetName = assetPath + "/" + abilityName + ".asset";
-        AssetDatabase.CreateAsset(newAbility, assetName);
+        string assetName = abilityName.Replace(" ", "") + ".asset";
+        string fullPath = System.IO.Path.Combine(assetPath, assetName);
+        AssetDatabase.CreateAsset(ability, fullPath);
         AssetDatabase.SaveAssets();
-
         EditorUtility.FocusProjectWindow();
-        Selection.activeObject = newAbility;
-
-        Debug.Log($"Created new ability asset: {abilityName} at {assetName}");
+        Selection.activeObject = ability;
+        Debug.Log("Saved Ability: " + abilityName + " at " + fullPath);
     }
 }
-#endif

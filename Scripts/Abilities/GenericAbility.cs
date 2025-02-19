@@ -1,19 +1,17 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Generic Ability", menuName = "Abilities/Generic Ability")]
+[CreateAssetMenu(fileName = "NewGenericAbility", menuName = "Abilities/Generic Ability", order = 1)]
 public class GenericAbility : AbilityBase
 {
-    [Header("Additional Settings")]
-    public string effectDescription = "";
-    // Only applicable for Special abilities.
-    public float effectRadius = 0f;
-
-    public override void ActivateAbility(GameObject user)
+    public override void ActivateAbility(GameObject target)
     {
-        // For now, we simply log activation.
-        Debug.Log($"{abilityName} ({abilityCategory}) activated with damage {damage} and cooldown {cooldown}.");
-        // You could add different behavior based on category here.
-        // For Passive abilities, this might be applied at the start of combat instead.
-        currentCooldown = cooldown;
+        // Implement your ability logic here.
+        Debug.Log("Activating generic ability '" + abilityName + "' on " + target.name);
+    }
+
+    public override void EndTurn()
+    {
+        // Implement your end-of-turn logic here (e.g., reducing cooldowns).
+        Debug.Log("Ending turn for generic ability '" + abilityName + "'.");
     }
 }

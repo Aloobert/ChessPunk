@@ -3,7 +3,6 @@ using UnityEngine;
 public class PlayerAbilities : MonoBehaviour
 {
     [Header("Assigned Abilities")]
-    // These fields store the active ability instances for each slot.
     public AbilityBase primaryAbility;
     public AbilityBase secondaryAbility;
     public AbilityBase specialAbility;
@@ -59,50 +58,51 @@ public class PlayerAbilities : MonoBehaviour
 
         // Primary Ability (index 0)
         GameObject primaryObj = Instantiate(abilityPrefabs[0]);
-        AbilityBase primary = primaryObj.GetComponent<AbilityBase>();
-        if (primary != null)
+        AbilityInstance primaryInstance = primaryObj.GetComponent<AbilityInstance>();
+        if (primaryInstance != null && primaryInstance.abilityData != null)
         {
-            primaryAbility = primary;
+            primaryAbility = primaryInstance.abilityData;
         }
         else
         {
-            Debug.LogWarning("Primary ability prefab missing AbilityBase component.");
+            Debug.LogWarning("Primary ability prefab missing AbilityInstance or abilityData.");
         }
 
         // Secondary Ability (index 1)
         GameObject secondaryObj = Instantiate(abilityPrefabs[1]);
-        AbilityBase secondary = secondaryObj.GetComponent<AbilityBase>();
-        if (secondary != null)
+        AbilityInstance secondaryInstance = secondaryObj.GetComponent<AbilityInstance>();
+        if (secondaryInstance != null && secondaryInstance.abilityData != null)
         {
-            secondaryAbility = secondary;
+            secondaryAbility = secondaryInstance.abilityData;
         }
         else
         {
-            Debug.LogWarning("Secondary ability prefab missing AbilityBase component.");
+            Debug.LogWarning("Secondary ability prefab missing AbilityInstance or abilityData.");
         }
 
         // Special Ability (index 2)
         GameObject specialObj = Instantiate(abilityPrefabs[2]);
-        AbilityBase special = specialObj.GetComponent<AbilityBase>();
-        if (special != null)
+        AbilityInstance specialInstance = specialObj.GetComponent<AbilityInstance>();
+        if (specialInstance != null && specialInstance.abilityData != null)
         {
-            specialAbility = special;
+            specialAbility = specialInstance.abilityData;
         }
         else
         {
-            Debug.LogWarning("Special ability prefab missing AbilityBase component.");
+            Debug.LogWarning("Special ability prefab missing AbilityInstance or abilityData.");
         }
 
         // Passive Ability (index 3)
         GameObject passiveObj = Instantiate(abilityPrefabs[3]);
-        AbilityBase passive = passiveObj.GetComponent<AbilityBase>();
-        if (passive != null)
+        AbilityInstance passiveInstance = passiveObj.GetComponent<AbilityInstance>();
+        if (passiveInstance != null && passiveInstance.abilityData != null)
         {
-            passiveAbility = passive;
+            passiveAbility = passiveInstance.abilityData;
         }
         else
         {
-            Debug.LogWarning("Passive ability prefab missing AbilityBase component.");
+            Debug.LogWarning("Passive ability prefab missing AbilityInstance or abilityData.");
         }
     }
+
 }
